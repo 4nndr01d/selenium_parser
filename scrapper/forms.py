@@ -1,5 +1,5 @@
 from django import forms
-from .tasks import scrapping_work
+from .tasks import scrapping_hh
 
 class FindForm(forms.Form):
     city = forms.CharField(
@@ -10,5 +10,5 @@ class FindForm(forms.Form):
             attrs={'class': 'form-control mb-3', 'placeholder': 'Language', 'id': 'form-language'}))
 
     def scrapp_work(self):
-        scrapping_work.delay('https://www.work.ua/jobs-kyiv-python/',self.cleaned_data['city'], self.cleaned_data['language'])
+        scrapping_hh.delay(self.cleaned_data['language'])
 
