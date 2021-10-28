@@ -1,6 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
-from .models import Vacancy, Company
+from .models import Vacancy, Company, Skill
 
 
 class HhParser:
@@ -19,14 +19,23 @@ class HhParser:
                 'a[data-qa="vacancy-serp__vacancy-title"]').get_attribute("href")
             vacancy_data = self.parse_vacansy(self.get_vacancy_data, vacancy_url)
             self.set_vacancy_data(vacancy_data)
-            return False
 
     def set_vacancy_data(self, data):
         if data['company_name']:
             company = self.set_company(data['company_name'])
         else:
             company = None
-        vacancy = self.set_vacancy(data, company)
+
+        if data['vacancy_id']:
+            self.set_vacancy(data, company)
+
+    def set_skills(self, data, vacancy):
+        for skill_name in data['skills']:
+            skill = Skill.objects.filter(name=skill_name).first()
+            if not skill:
+                skill = Skill(name=skill_name)
+                skill.save()
+            vacancy.skills.add(skill)
 
     def set_company(self, company_name):
         company = Company.objects.filter(name=company_name).first()
@@ -47,7 +56,7 @@ class HhParser:
                               company=company
                               )
             vacancy.save()
-        return vacancy
+            self.set_skills(vacancy_data, vacancy)
 
     def get_vacancy_data(self, vacancy_url):
         return {
@@ -106,12 +115,12 @@ class HhParser:
         self.driver.close()
         self.driver.switch_to.window(self.driver.window_handles[0])
 
-    def scrap(self, city):
+    def scrap(self, language):
         options = Options()
         options.headless = True
         driver = webdriver.Firefox(options=options)
         self.driver = driver
-        driver.get("https://spb.hh.ru/search/vacancy?text=" + city)
+        driver.get("https://spb.hh.ru/search/vacancy?text=" + language)
         self.get_vacancies()
         driver.close()
 

@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.db import models
 from django.conf import settings
 
@@ -19,6 +21,7 @@ class Vacancy(models.Model):
     salary = models.CharField(max_length=200, blank=True)
     address = models.CharField(max_length=200)
     url = models.CharField(max_length=200)
+    created_date = models.DateTimeField(default=timezone.now)
     skills = models.ManyToManyField(Skill)
     company = models.ForeignKey('scrapper.Company', on_delete=models.CASCADE, related_name='vacancies', blank=True)
     def __str__(self):

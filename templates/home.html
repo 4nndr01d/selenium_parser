@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Main{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-6">
+        <form action="{% url 'vacancies_list' %}" method="post">
+            <div class="form-group">
+                {% csrf_token %}
+                {{form.as_p}}
+            </div>
+            <input class="btn btn-primary" type="submit" value="Submit">
+        </form>
+    </div>
+</div>
+
+<div class="album py-5 bg-light">
+    <div class="container">
+        <div class="row row-cols-1 g-3">
+            {% for vacancy in vacancies %}
+            <div class="col">
+                <div class="card shadow-sm ">
+                    <div class="card-header text-primary d-flex justify-content-between align-items-center"><h5>
+                        {{vacancy}}</h5>
+                        <a href="{{vacancy.url}}" type="button" class="btn btn-primary">Смотреть на сайте</a>
+                    </div>
+                    <div class="p-3 d-flex justify-content-between">
+                        <a href="">{{vacancy.company}}</a>
+                        <span>{{vacancy.salary}}</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{vacancy.description|truncatechars:250}}</p>
+                        {% for skill in vacancy.skills.all %}
+                        <button type="button" disabled style="font-size:10px;" class="btn btn-secondary mb-1">
+                            {{skill}}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <!--                            <div class="btn-group">-->
+                            <!--                                <button type="button" class="btn btn-sm btn-outline-secondary">View</button>-->
+                            <!--                                <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>-->
+                            <!--                            </div>-->
+                            <small class="text-muted">9 mins</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="container p-4">
+    <div class="pagination justify-content-center">
+        {% if vacancies.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ vacancies.previous_page_number }}">Previous</a></li>
+        {% else %}
+        <li class="page-item disabled"><a class="page-link">Previous</a></li>
+        {% endif %}
+        {% for i in vacancies.paginator.page_range %}
+        {% if vacancies.number == i %}
+        <li class="page-item active"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+        {% else %}
+        <li class="page-item "><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if vacancies.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ vacancies.next_page_number }}">Next</a></li>
+        {% else %}
+        <li class="page-item disabled"><a class="page-link">Next</a></li>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
