@@ -1,10 +1,10 @@
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
-from .models import Vacancy, Company, Skill
+from .models import Vacancy, Company, Skill, Country, Area
 
 
 class HhParser:
-
     def get_pages_count(self):
         pagination_btn = self.driver.find_elements_by_css_selector("a.bloko-button[data-qa='pager-page']")
         if pagination_btn:
@@ -12,9 +12,9 @@ class HhParser:
         else:
             return 1
 
+    # todo отрефакторить методы get
     def get_vacancies(self):
-        vacancy_items = self.driver.find_elements_by_css_selector("div.vacancy-serp-item")
-        for vacancy_item in vacancy_items:
+        for vacancy_item in self.driver.find_elements_by_css_selector("div.vacancy-serp-item"):
             vacancy_url = vacancy_item.find_element_by_css_selector(
                 'a[data-qa="vacancy-serp__vacancy-title"]').get_attribute("href")
             vacancy_data = self.parse_vacansy(self.get_vacancy_data, vacancy_url)
@@ -116,14 +116,50 @@ class HhParser:
         self.driver.switch_to.window(self.driver.window_handles[0])
 
     def scrap(self, language):
-        options = Options()
-        options.headless = True
-        driver = webdriver.Firefox(options=options)
+        # options = Options()
+        # options.headless = True
+        # driver = webdriver.Firefox(options=options)
+        driver = webdriver.Firefox()
         self.driver = driver
         driver.get("https://spb.hh.ru/search/vacancy?text=" + language)
         self.get_vacancies()
         driver.close()
 
+
+class AreaScrapper:
+    def scrap_areas(self):
+        driver = webdriver.Firefox()
+        self.driver = driver
+        driver.get("https://spb.hh.ru/search/vacancy/advanced")
+        self.driver.find_element(By.CSS_SELECTOR, '.Bloko-CompositeSelection-TreeSelectorPopup').click()
+        county_rows = self.get_country_rows()
+        for country_row in county_rows:
+            country_data = self.get_country_data(country_row)
+            self.set_country(country_data)
+            country_row.find_element_by_css_selector('.bloko-modal .bloko-tree-selector-item-spacer').click()
+            region_rows = self.get_region_rows(country_row)
+            print(region_rows)
+            return False
+
+    def get_country_rows(self):
+        return self.driver.find_elements(By.CSS_SELECTOR,
+                                         '.bloko-modal .Bloko-TreeSelector-Element.bloko-tree-selector-item')
+
+    def get_region_rows(self, country_row):
+        return country_row.find_elements(By.CSS_SELECTOR,
+                                         '.bloko-tree-selector-item_has-parent')
+
+    def get_country_data(self, country_row):
+        return {
+            "country_area_id": country_row.find_element_by_css_selector('.bloko-checkbox__input').get_attribute(
+                'value'),
+            "country_name": country_row.find_element_by_css_selector('.bloko-checkbox__text').text
+        }
+    def set_country(self, country_data):
+        country = Country.objects.filter(area_id=country_data['country_area_id']).first()
+        if not country:
+            country = Country(area_id=country_data['country_area_id'], name=country_data['country_name'])
+            country.save()
 
 if __name__ == '__main__':
     hh_parser = HhParser()

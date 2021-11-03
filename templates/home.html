@@ -1,32 +1,36 @@
 {% extends 'base.html' %}
+
 {% block title %}Main{% endblock %}
 
 {% block content %}
 
-<div class="row">
-    <div class="col-md-6">
-        <form action="{% url 'vacancies_list' %}" method="post">
-            <div class="form-group">
-                {% csrf_token %}
-                {{form.as_p}}
-            </div>
-            <input class="btn btn-primary" type="submit" value="Submit">
-        </form>
-    </div>
-</div>
+<!--<div class="row">-->
+<!--    <div class="col-md-6">-->
+<!--        <form action="{% url 'vacancies_list' %}" method="post">-->
+<!--            <div class="form-group">-->
+<!--                {% csrf_token %}-->
+<!--                {{form.as_p}}-->
+<!--            </div>-->
+<!--            <input class="btn btn-primary" type="submit" value="Submit">-->
+<!--        </form>-->
+<!--    </div>-->
+<!--</div>-->
+{% include 'components/vacancy_filter.html' with filter=filter %}
+
 
 <div class="album py-5 bg-light">
     <div class="container">
         <div class="row row-cols-1 g-3">
+            {% if vacancies.count %}
             {% for vacancy in vacancies %}
             <div class="col">
                 <div class="card shadow-sm ">
-                    <div class="card-header text-primary d-flex justify-content-between align-items-center"><h5>
-                        {{vacancy}}</h5>
+                    <div class="card-header text-primary d-flex justify-content-between align-items-center">
+                        <h5><a href="{% url 'vacancy_detail' vacancy_id=vacancy.vacancy_id %}">{{vacancy}}</a></h5>
                         <a href="{{vacancy.url}}" type="button" class="btn btn-primary">Смотреть на сайте</a>
                     </div>
                     <div class="p-3 d-flex justify-content-between">
-                        <a href="">{{vacancy.company}}</a>
+                        <a href="{% url 'vacancies_list'%}?company={{vacancy.company.id}}">{{vacancy.company}}</a>
                         <span>{{vacancy.salary}}</span>
                     </div>
                     <div class="card-body">
@@ -49,6 +53,9 @@
                 </div>
             </div>
             {% endfor %}
+            {% else %}
+            <p>List is empty</p>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}{{vacancy.name}}{% endblock %}
+{% block content %}
+
+<div class="row p-4 mt-5 mb-5 pb-0 pe-lg-0 pt-lg-5 align-items-center rounded-3 border shadow-lg">
+    <div class="col-lg-12 p-3 p-lg-5 pt-lg-6 d-flex flex-wrap align-items-center justify-content-between">
+        <div class="col-lg-12 d-flex justify-content-between align-items-center">
+            <h1 class="display-4 fw-bold lh-1">{{vacancy.name}}</h1>
+            <a href="{{vacancy.url}}" type="button" class="btn btn-primary">Смотреть на сайте</a>
+        </div>
+        <h5><a href="{% url 'vacancies_list'%}?company={{vacancy.company.id}}">{{vacancy.company}}</a></h5>
+        <p>{{vacancy.salary}}</p>
+        <p class="lead">{{vacancy.description}}</p>
+        <p class="fw-lighter">{{vacancy.address}}</p>
+        <div class="col-lg-12">
+            {% for skill in vacancy.skills.all %}
+            <button type="button" disabled class="btn btn-secondary mb-1">
+                {{skill}}
+            </button>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

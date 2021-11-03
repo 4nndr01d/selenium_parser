@@ -14,6 +14,20 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
+class Country(models.Model):
+    name = models.CharField(max_length=200)
+    area_id = models.IntegerField(unique=True)
+    def __str__(self):
+        return self.name
+
+class Area(models.Model):
+    name = models.CharField(max_length=200)
+    country = models.ForeignKey('scrapper.Country', on_delete=models.CASCADE, related_name='areas', blank=True)
+    area_id = models.IntegerField(unique=True)
+    def __str__(self):
+        return self.name
+
+
 class Vacancy(models.Model):
     name = models.CharField(max_length=200)
     vacancy_id = models.IntegerField(unique=True)
@@ -24,6 +38,7 @@ class Vacancy(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     skills = models.ManyToManyField(Skill)
     company = models.ForeignKey('scrapper.Company', on_delete=models.CASCADE, related_name='vacancies', blank=True)
+    area = models.ForeignKey('scrapper.Area', on_delete=models.CASCADE, related_name='vacancies', blank=True)
     def __str__(self):
         return self.name
 
